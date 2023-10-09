@@ -1,0 +1,35 @@
+.spinner-container{
+  position: relative;
+} 
+
+.spinner{
+  font-size: 140px;
+  transform-origin: center center;
+  line-height: 70px;
+}
+
+.spinner::after {
+  content: '◌';
+  background: linear-gradient(to right, transparent 0%, transparent 54%, black 55%, black 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+  animation: spin 2s linear infinite;
+  position: absolute;
+  top: 10rem;
+  translate: 400%;
+
+}
+
+@keyframes spin {
+  to{
+    transform: rotate(360deg) ;
+  }
+}
+
+
+
+#chart {
+    border: 1px solid black;
+}
