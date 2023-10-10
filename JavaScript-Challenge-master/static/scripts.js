@@ -202,6 +202,9 @@ function plotData(allStocksData) {
       symbolCell.textContent = symbol;
       valueCell.textContent = data.Value;
       timestampCell.textContent = new Date(data.Timestamp);
+
+      const stockColour = colourList[symbol];
+      row.classList.add(`color-${stockColour}`);
     });
 
     ctx.stroke();

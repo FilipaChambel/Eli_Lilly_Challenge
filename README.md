@@ -21,6 +21,7 @@ Javascript recruitment task
 * Assigned colours to each Stock Symbol in the Line Chart to improve readability
 * Populated X Axis with timestamp values and Y Axis with stock value
 * Hid the table of stocks if the list of stock data is not retrieved
+* Added CSS on the stock table and colours of Stock Symbols match with lines on chart for better identification
 
 
 ## The application

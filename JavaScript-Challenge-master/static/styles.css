@@ -36,6 +36,10 @@
     border: 1px solid black;
 }
 
+/*
+* Applied CSS on the stock table
+*/
+
 .stock-table{
   background-color: lightblue;
   font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
@@ -54,4 +58,29 @@ body{
   justify-content: center;
   flex-direction: column;
   padding: 1rem;
+}
+
+/*
+* Stock Symbols match with lines on graph
+* for better readability
+*/
+
+.color-red{
+  color: red;
+}
+
+.color-blue{
+  color: blue;
+}
+
+.color-green{
+  color: green;
+}
+
+.color-orange{
+  color: darkgoldenrod;
+}
+
+.color-purple{
+  color: purple;
 }
