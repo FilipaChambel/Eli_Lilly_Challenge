@@ -23,9 +23,10 @@ drawTriangle([35, 50], [65, 50], [50, 35]);
 drawLine([50, 550], [950, 550]);
 drawTriangle([950, 535], [950, 565], [965, 550]);
 
-const spinner = document.getElementById("spinner");
+
 let allStocksData = []; //array that stores all stocks data
 let tableData = {};
+
 /**
  * Query the backend for list of available stocks
  */
@@ -39,6 +40,7 @@ fetch("http://localhost:3000/stocks")
     /**
      * Hide the spinner after all data is loaded
      */
+    const spinner = document.getElementById("spinner");
     spinner.style.display = "none";
 
     /**
@@ -151,7 +153,11 @@ function plotData(allStocksData) {
     ctx.fillText(i.toString(), 10, ylabel);
   }
 
-  //color for each stock symbol line in the chart
+  /**
+   * Assigned colour to each stock symbol in 
+   * the chart for better plot reading
+   */
+  
   const colourList = {};
   const setSymbols = Array.from(
     new Set(allStocksData.map((data) => data[0].Symbol))
@@ -177,8 +183,20 @@ function plotData(allStocksData) {
       } else {
         ctx.lineTo(x, y);
       }
+
+      const tableBody = document.querySelector('#stock-table tbody');
+      const row = tableBody.insertRow();
+      const symbolCell = row.insertCell(0);
+      const valueCell = row.insertCell(1);
+      const timestampCell = row.insertCell(2);
+  
+      symbolCell.textContent = symbol;
+      valueCell.textContent = data.Value;
+      timestampCell.textContent = new Date(data.Timestamp);
+
     });
 
     ctx.stroke();
+
   });
 }
