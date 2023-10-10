@@ -24,7 +24,8 @@ drawLine([50, 550], [950, 550]);
 drawTriangle([950, 535], [950, 565], [965, 550]);
 
 const spinner = document.getElementById("spinner");
-
+let allStocksData = []; //array that stores all stocks data
+let tableData = {};
 /**
  * Query the backend for list of available stocks
  */
@@ -44,8 +45,6 @@ fetch("http://localhost:3000/stocks")
      * Query the backend for data about each stock
      */
 
-    let allStocksData = []; //array that stores all stocks data
-    let tableData = {};
     Promise.all(
       stockSymbols.map(async (stockSymbol) => {
         try {
@@ -54,29 +53,32 @@ fetch("http://localhost:3000/stocks")
           );
           const stockData = await res.json();
           // console.log(`Data for ${stockSymbol}: `);
-          for (let i = 0; i < stockData.length; i++) {
-            const formattedStockData = {
+
+          if (stockData.length > 0) {
+            const formattedStockData = stockData.map((data) => ({
               Symbol: stockSymbol,
-              Value: stockData[i].value,
-              Timestamp: stockData[i].timestamp,
-            };
-            //console.log(stockData)
-            //console.log(formattedStockData);
+              Value: data.value,
+              Timestamp: data.timestamp,
+            }));
 
             allStocksData.push(formattedStockData);
+            //console.log(stockData);
+            //console.log(formattedStockData);
+            // console.log(allStocksData);
+          } else {
+            console.warn(`No data found for ${stockSymbol}`);
           }
-          // console.log(allStocksData);
-          plotData(stockData);
         } catch (error) {
           console.error("Error retriving stock data", error);
           return null;
         }
       })
     ).then(() => {
+      plotData(allStocksData);
       /**
        * Log the data in a table
        */
-      tableData = allStocksData.map((data) => {
+      tableData = allStocksData.flat().map((data) => {
         return {
           Symbol: data.Symbol,
           Value: data.Value,
@@ -85,44 +87,98 @@ fetch("http://localhost:3000/stocks")
       });
 
       console.table(tableData);
+      console.log(allStocksData);
     });
   })
   .catch((error) => {
     console.error("Error retriving list of available stocks", error);
   });
 
-function plotData(stockData) {
-  const xAxis = canvas.width / (stockData.length - 1);
-  const yAxis = canvas.height / 100; //Consider stock values between 0 to 100
+/**
+ * Function that plots the stock data
+ * into the line chart
+ */
 
-  ctx.beginPath();
+function plotData(allStocksData) {
+  let minValue = 0;
+  let maxValue = 0;
+
+  let minTimestamp = 0;
+  let maxTimestamp = 0;
+
+  allStocksData.forEach((stockData) => {
+    stockData.forEach((data) => {
+    
+      if (data.Value < minValue) {
+        minValue = data.Value;
+      } else if (data.Value > maxValue) {
+        maxValue = data.Value;
+      }
+
+      const timestamp = new Date(data.Timestamp);
+      if(timestamp < minTimestamp){
+        minTimestamp = timestamp;
+      } else if (timestamp > maxTimestamp){
+        maxTimestamp = timestamp;
+      }
+      
+    });
+  });
+  const xAxis = canvas.width / (allStocksData[0].length - 1);
+  const yAxis = canvas.height / (maxValue - minValue);
+  //const yAxis = canvas.height / 100; //Consider stock values between 0 to 100
+
+  //Set min and max time range (8am to 6pm)
+  const minTime = 8;
+  const maxTime = 18;
+  const totalTime = maxTime - minTime;
 
   //x-axis labels
   ctx.font = "8px";
   ctx.fillStyle = "black";
 
-  for (let i = 100; i <= 1000; i += 100) {
-    const xlabel = (i * xAxis) / 100;
-    ctx.fillText(i.toString(), xlabel, canvas.height - 30); //adjust labels to the height of the axis
+  for (let i = 0; i < totalTime; i++) {
+    const currentTime = minTime + i;
+    const timestamp = new Date(minTimestamp);
+    timestamp.setHours(currentTime, 0, 0, 0);
+    const xLabels = i/totalTime * canvas.width + 40;
+    ctx.fillText(currentTime.toString() + ":00", xLabels, canvas.height - 20);
   }
 
   //y-axis labels
   for (let i = 10; i <= 100; i += 10) {
-    const ylabel = canvas.height - i * yAxis;
+    const ylabel = canvas.height - (i - minValue) * yAxis;
     ctx.fillText(i.toString(), 10, ylabel);
   }
 
-  for (let i = 0; i < stockData.length; i++) {
-    const x = i * xAxis + 50;//start plotting the graph after the drawLine
-    const y = canvas.height - stockData[i].value * yAxis;
+  //color for each stock symbol line in the chart
+  const colourList = {};
+  const setSymbols = Array.from(
+    new Set(allStocksData.map((data) => data[0].Symbol))
+  );
+  const arrayColours = ["red", "blue", "green", "orange", "purple"];
+  ctx.lineWidth = 2;
 
-    if (i === 0) {
-      ctx.moveTo(x, y);
-    } else {
-      ctx.lineWidth = 2;
-      ctx.lineTo(x, y);
-      
-    }
+  setSymbols.forEach((symbol, index) => {
+    colourList[symbol] = arrayColours[index % arrayColours.length];
+  });
+
+  allStocksData.forEach((stockData, stockIndex) => {
+    const symbol = stockData[0].Symbol;
+    ctx.beginPath();
+    ctx.strokeStyle = colourList[symbol];
+    console.log(ctx.strokeStyle);
+    stockData.forEach((data, dataIndex) => {
+      const x = dataIndex * xAxis + 50; //plot the graph after the drawLine
+      const y = canvas.height - (data.Value - minValue) * yAxis;
+
+      if (dataIndex === 0) {
+        ctx.moveTo(x, y);
+      } else {
+        ctx.lineTo(x, y);
+      }
+    });
+
     ctx.stroke();
-  }
+  });
 }
