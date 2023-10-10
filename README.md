@@ -19,8 +19,8 @@ Javascript recruitment task
 
 * Populated table with the stock data in the HTML page for better user experience
 * Assigned colours to each Stock Symbol in the Line Chart to improve readability
-* populated X Axis with timestamp values and Y Axis with stock value
-* Hide the table of stocks if the list of stock data is not retrieved
+* Populated X Axis with timestamp values and Y Axis with stock value
+* Hid the table of stocks if the list of stock data is not retrieved
 
 
 ## The application
