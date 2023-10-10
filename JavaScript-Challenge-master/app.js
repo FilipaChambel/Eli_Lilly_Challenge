@@ -8,7 +8,7 @@ app.use(express.static(path.join(__dirname, 'static')))
 app.get("/stocks", async (req, res) => {
   /**
    * Return a meaningful error message
-   * when stock data cannot be retrieved
+   * when stock names cannot be retrieved
    */
   try {
     const stockSymbols = await stocks.getStocks();

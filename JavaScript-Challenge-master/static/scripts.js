@@ -44,47 +44,57 @@ fetch("http://localhost:3000/stocks")
      * Query the backend for data about each stock
      */
 
+    let allStocksData = []; //array that stores all stocks data
+    let tableData = {};
     Promise.all(
-      stockSymbols.map((stockSymbol) => {
-        fetch(`http://localhost:3000/stocks/${stockSymbol}`)
-          .then((res) => res.json())
-          .then((stockData) => {
-            console.log(`Data for ${stockSymbol}: `);
-            
-            for(let i = 0; i< stockData.length; i++){
-              const formattedStockData =  {
-                Symbol: stockSymbol,
-                Value: stockData[i].value,
-                Timestamp: stockData[i].timestamp,
-              };
-              
-              //log the data in an array format
-            console.log(stockData);
-            /**
-             * Log the data in a more structured way in a table format
-             */
-            console.table([formattedStockData]);
-
-            plotData(stockData);
-             // return formattedStockData;
-            
+      
+      stockSymbols.map(async (stockSymbol) => {
+       try {
+          const res = await fetch(`http://localhost:3000/stocks/${stockSymbol}`)
+          const stockData = await res.json()
+          // console.log(`Data for ${stockSymbol}: `);
+          for (let i = 0; i < stockData.length; i++) {
+            const formattedStockData = {
+              Symbol: stockSymbol,
+              Value: stockData[i].value,
+              Timestamp: stockData[i].timestamp,
             }
-           
-            // return formattedStockData;
-          })
-          .catch((error) => {
-            console.error("Error retriving stock data", error);
-            return null;
-          });
+//console.log(stockData)
+//console.log(formattedStockData);
+
+            allStocksData.push(formattedStockData)
+          }
+          console.log(allStocksData);
+          plotData(stockData)
+        } catch (error) {
+          console.error("Error retriving stock data", error)
+          return null
+        }
       })
-    ).then((stockDataArray) => {
-      //console.table(stockDataArray.filter((data) => data !== null));
+      
+    ).then(() => {
+        /**
+             * Log the data in a table
+             */
+        tableData = allStocksData.map((data) => {
+          return {
+            Symbol: data.Symbol,
+            Value: data.Value,
+            Timestamp: new Date(data.Timestamp).toLocaleString(), // Format the timestamp as date and time
+          };
+        });
+
+        console.table(tableData);
+ 
+      
     });
+   
+    
   })
   .catch((error) => {
     console.error("Error retriving list of available stocks", error);
   });
-
+ 
   function plotData(stockData){
 const xAxis = canvas.width / (stockData.length-1);
 const yAxis = canvas.height / 100; //Consider stock values between 0 to 100
