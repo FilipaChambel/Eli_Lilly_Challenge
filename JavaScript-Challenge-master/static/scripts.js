@@ -23,7 +23,6 @@ drawTriangle([35, 50], [65, 50], [50, 35]);
 drawLine([50, 550], [950, 550]);
 drawTriangle([950, 535], [950, 565], [965, 550]);
 
-
 let allStocksData = []; //array that stores all stocks data
 let tableData = {};
 
@@ -35,7 +34,7 @@ fetch("http://localhost:3000/stocks")
   .then((res) => res.json())
   .then((data) => {
     const stockSymbols = data.stockSymbols;
-    console.log("List of available stocks: ", stockSymbols);
+    //console.log("List of available stocks: ", stockSymbols);
 
     /**
      * Hide the spinner after all data is loaded
@@ -54,7 +53,7 @@ fetch("http://localhost:3000/stocks")
             `http://localhost:3000/stocks/${stockSymbol}`
           );
           const stockData = await res.json();
-          // console.log(`Data for ${stockSymbol}: `);
+         
 
           if (stockData.length > 0) {
             const formattedStockData = stockData.map((data) => ({
@@ -77,6 +76,7 @@ fetch("http://localhost:3000/stocks")
       })
     ).then(() => {
       plotData(allStocksData);
+
       /**
        * Log the data in a table
        */
@@ -89,11 +89,18 @@ fetch("http://localhost:3000/stocks")
       });
 
       console.table(tableData);
-      console.log(allStocksData);
+      //console.log(allStocksData);
     });
   })
   .catch((error) => {
     console.error("Error retriving list of available stocks", error);
+
+    /**
+     * Hide the stock table in the HTML
+     * if the list of stocks is not retrieved
+     */
+    const stock_table = document.getElementById("stock-table");
+    stock_table.style.display = "none";
   });
 
 /**
@@ -110,7 +117,6 @@ function plotData(allStocksData) {
 
   allStocksData.forEach((stockData) => {
     stockData.forEach((data) => {
-    
       if (data.Value < minValue) {
         minValue = data.Value;
       } else if (data.Value > maxValue) {
@@ -118,17 +124,15 @@ function plotData(allStocksData) {
       }
 
       const timestamp = new Date(data.Timestamp);
-      if(timestamp < minTimestamp){
+      if (timestamp < minTimestamp) {
         minTimestamp = timestamp;
-      } else if (timestamp > maxTimestamp){
+      } else if (timestamp > maxTimestamp) {
         maxTimestamp = timestamp;
       }
-      
     });
   });
   const xAxis = canvas.width / (allStocksData[0].length - 1);
   const yAxis = canvas.height / (maxValue - minValue);
-  //const yAxis = canvas.height / 100; //Consider stock values between 0 to 100
 
   //Set min and max time range (8am to 6pm)
   const minTime = 8;
@@ -143,7 +147,7 @@ function plotData(allStocksData) {
     const currentTime = minTime + i;
     const timestamp = new Date(minTimestamp);
     timestamp.setHours(currentTime, 0, 0, 0);
-    const xLabels = i/totalTime * canvas.width + 40;
+    const xLabels = (i / totalTime) * canvas.width + 40;
     ctx.fillText(currentTime.toString() + ":00", xLabels, canvas.height - 20);
   }
 
@@ -154,10 +158,10 @@ function plotData(allStocksData) {
   }
 
   /**
-   * Assigned colour to each stock symbol in 
+   * Assigned colour to each stock symbol in
    * the chart for better plot reading
    */
-  
+
   const colourList = {};
   const setSymbols = Array.from(
     new Set(allStocksData.map((data) => data[0].Symbol))
@@ -173,7 +177,7 @@ function plotData(allStocksData) {
     const symbol = stockData[0].Symbol;
     ctx.beginPath();
     ctx.strokeStyle = colourList[symbol];
-    console.log(ctx.strokeStyle);
+  
     stockData.forEach((data, dataIndex) => {
       const x = dataIndex * xAxis + 50; //plot the graph after the drawLine
       const y = canvas.height - (data.Value - minValue) * yAxis;
@@ -184,19 +188,22 @@ function plotData(allStocksData) {
         ctx.lineTo(x, y);
       }
 
-      const tableBody = document.querySelector('#stock-table tbody');
+      /**
+       * Populated table in HTML with
+       * stock data
+       */
+
+      const tableBody = document.querySelector("#stock-table tbody");
       const row = tableBody.insertRow();
       const symbolCell = row.insertCell(0);
       const valueCell = row.insertCell(1);
       const timestampCell = row.insertCell(2);
-  
+
       symbolCell.textContent = symbol;
       valueCell.textContent = data.Value;
       timestampCell.textContent = new Date(data.Timestamp);
-
     });
 
     ctx.stroke();
-
   });
 }
